@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Paletes</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Dashboard de Agendamentos</h1>
+
+        <form method="POST" class="date-form">
+            <label for="data">Selecionar Data:</label>
+            <input type="text" id="data" name="data" value="{{ data }}">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <div class="cards">
+            <div class="card">Total Paletes<br><strong>{{ total_paletes }}</strong></div>
+            <div class="card">FOB<br><strong>{{ fob_pct }}%</strong></div>
+            <div class="card">CIF<br><strong>{{ cif_pct }}%</strong></div>
+        </div>
+
+        <h2>📊 Paletes por Fornecedor</h2>
+        <table>
+            <tr><th>Fornecedor</th><th>Paletes</th></tr>
+            {% for fornecedor, qtd in fornecedores.items() %}
+            <tr><td>{{ fornecedor }}</td><td>{{ qtd }}</td></tr>
+            {% endfor %}
+        </table>
+
+        <div class="charts">
+            <canvas id="barChart"></canvas>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const fornecedores = {{ fornecedores | tojson }};
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(fornecedores),
+                datasets: [{
+                    label: 'Paletes por Fornecedor',
+                    data: Object.values(fornecedores),
+                    backgroundColor: '#4da6ff'
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['FOB', 'CIF'],
+                datasets: [{
+                    data: [{{ fob_pct }}, {{ cif_pct }}],
+                    backgroundColor: ['#0059b3', '#80bfff']
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+</body>
+</html>
